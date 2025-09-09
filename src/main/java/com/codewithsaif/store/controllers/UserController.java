@@ -1,14 +1,11 @@
 package com.codewithsaif.store.controllers;
 
-import com.codewithsaif.store.Dtos.UserDto;
-import com.codewithsaif.store.entities.User;
+import com.codewithsaif.store.dtos.UserDto;
+import com.codewithsaif.store.mappers.UserMapper;
 import com.codewithsaif.store.repositories.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @AllArgsConstructor
 @RestController
@@ -16,11 +13,11 @@ import java.util.List;
 public class UserController {
 
     private final UserRepository userRepository;
-
+    private final UserMapper userMapper;
     @GetMapping
-    private List<UserDto> getUsers(){
+    private Iterable<UserDto> getUsers(){
         return userRepository.findAll().stream()
-                .map(user-> new UserDto(user.getId(),user.getName(),user.getEmail()))
+                .map(userMapper::toDto)
                 .toList();
     }
 
@@ -29,7 +26,7 @@ public class UserController {
         var user =  userRepository.findById(id).orElse(null);
         if(user == null)
             return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(new UserDto(user.getId(),user.getName(),user.getEmail()));
+        return ResponseEntity.ok(userMapper.toDto(user));
     }
 
 }
