@@ -1,11 +1,13 @@
 package com.codewithsaif.store.controllers;
 
+import com.codewithsaif.store.dtos.RegisterUserRequest;
 import com.codewithsaif.store.dtos.UserDto;
 import com.codewithsaif.store.mappers.UserMapper;
 import com.codewithsaif.store.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @AllArgsConstructor
 @RestController
@@ -19,6 +21,17 @@ public class UserController {
         return userRepository.findAll().stream()
                 .map(userMapper::toDto)
                 .toList();
+    }
+
+    @PostMapping
+    private ResponseEntity<UserDto> registerUser(
+            @RequestBody RegisterUserRequest request,
+            UriComponentsBuilder uriBuilder){
+        var user = userMapper.toEntity(request);
+        userRepository.save(user);
+        var userDto = userMapper.toDto(user);
+        var uri = uriBuilder.path("/users/{id}").buildAndExpand(user.getId()).toUri();
+        return ResponseEntity.created(uri).body(userDto);
     }
 
     @GetMapping("/{id}")
