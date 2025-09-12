@@ -8,14 +8,11 @@ import com.codewithsaif.store.mappers.UserMapper;
 import com.codewithsaif.store.repositories.UserRepository;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @AllArgsConstructor
@@ -34,7 +31,7 @@ public class UserController {
 
     @PostMapping
     private ResponseEntity<UserDto> registerUser(
-            @RequestBody RegisterUserRequest request,
+            @Valid  @RequestBody RegisterUserRequest request,
             UriComponentsBuilder uriBuilder){
         var user = userMapper.toEntity(request);
         userRepository.save(user);
@@ -88,10 +85,4 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message", "Password saved successfully!"));
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    ResponseEntity<Map<String,String>> handelValidationExceptions(MethodArgumentNotValidException exception){
-        var errors = new HashMap<String, String>();
-        exception.getBindingResult().getFieldErrors().forEach(e->errors.put(e.getField(),e.getDefaultMessage()));
-        return ResponseEntity.badRequest().body(errors);
-    }
 }
