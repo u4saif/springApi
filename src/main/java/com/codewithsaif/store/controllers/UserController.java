@@ -6,13 +6,16 @@ import com.codewithsaif.store.dtos.UpdateUserRequest;
 import com.codewithsaif.store.dtos.UserDto;
 import com.codewithsaif.store.mappers.UserMapper;
 import com.codewithsaif.store.repositories.UserRepository;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @AllArgsConstructor
@@ -48,9 +51,11 @@ public class UserController {
         return ResponseEntity.ok(userMapper.toDto(user));
     }
 
+
     @PutMapping("/{id}")
-    private ResponseEntity<UserDto> updateUser(@PathVariable(name = "id") Long id,
-                                               @RequestBody UpdateUserRequest request){
+    private ResponseEntity<UserDto> updateUser(
+            @PathVariable(name = "id") Long id,
+            @Valid @RequestBody UpdateUserRequest request){
         var user = userRepository.findById(id).orElse(null);
         if(user == null)
             return ResponseEntity.notFound().build();
@@ -71,7 +76,7 @@ public class UserController {
     @PostMapping("/{id}/change-password")
     private ResponseEntity<Map<String,String>> changePassword(
             @PathVariable(name = "id") Long id,
-            @RequestBody ChangePasswordRequest request){
+            @Valid @RequestBody ChangePasswordRequest request){
         var user =  userRepository.findById(id).orElse(null);
         if(user == null)
             return ResponseEntity.notFound().build();
@@ -83,4 +88,10 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message", "Password saved successfully!"));
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    ResponseEntity<Map<String,String>> handelValidationExceptions(MethodArgumentNotValidException exception){
+        var errors = new HashMap<String, String>();
+        exception.getBindingResult().getFieldErrors().forEach(e->errors.put(e.getField(),e.getDefaultMessage()));
+        return ResponseEntity.badRequest().body(errors);
+    }
 }
