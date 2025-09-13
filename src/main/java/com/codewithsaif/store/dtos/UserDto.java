@@ -1,5 +1,6 @@
 package com.codewithsaif.store.dtos;
 
+import com.codewithsaif.store.validations.LowerCaseValidation;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

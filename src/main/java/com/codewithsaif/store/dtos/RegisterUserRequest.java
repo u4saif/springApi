@@ -1,5 +1,6 @@
 package com.codewithsaif.store.dtos;
 
+import com.codewithsaif.store.validations.LowerCaseValidation;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
@@ -14,6 +15,7 @@ public class RegisterUserRequest {
     public String name;
 
     @NotBlank(message = "Email is required")
+    @LowerCaseValidation(message = "Email must be lower case.")
     @Email
     public String email;
 
