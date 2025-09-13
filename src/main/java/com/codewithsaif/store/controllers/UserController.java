@@ -35,7 +35,7 @@ public class UserController {
             UriComponentsBuilder uriBuilder){
         if(userRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity.badRequest().body(
-                    Map.of("message","Email already registered"\
+                    Map.of("message","Email already registered")
             );
         };
         var user = userMapper.toEntity(request);
