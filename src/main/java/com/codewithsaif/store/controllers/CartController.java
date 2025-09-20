@@ -24,6 +24,16 @@ public class CartController {
     private final CartMapper cartMapper;
     private final ProductRepository productRepository;
 
+    @GetMapping("/{cartId}")
+    public ResponseEntity<CartDto> getCart(@PathVariable UUID cartId){
+        var cart = cartRepository.findById(cartId).orElse(null);
+        if(cart == null){
+            return  ResponseEntity.notFound().build();
+        }
+        var cartDto = cartMapper.toDto(cart);
+        return ResponseEntity.ok(cartDto);
+    }
+
     @PostMapping
     public ResponseEntity<CartDto> createCart(){
         var cart = new Cart();
