@@ -96,13 +96,9 @@ public class CartController {
         if(product == null){
             var errorMessage = Map.of("error","Product not present in the system");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
-//            return  ResponseEntity.badRequest().build();
         }
 
-        var cartItem = cart.getCartItems().stream()
-                .filter(item -> item.getProduct().getId().equals(product.getId()))
-                .findFirst()
-                .orElse(null);
+        var cartItem = cart.getItem(productId);
 
         if(cartItem == null){
             var errorMessage = Map.of("error","Product not present in the cart");
@@ -113,5 +109,20 @@ public class CartController {
         cartRepository.save(cart);
         var cartDto = cartMapper.toDto(cart);
         return ResponseEntity.ok(cartDto);
+    }
+
+    @DeleteMapping("/{cartId}/items/{productId}")
+    public ResponseEntity<?> deleteProduct(
+            @PathVariable("cartId") UUID cartId ,
+            @PathVariable("productId") Long productId
+    ){
+        var cart = cartRepository.findById(cartId).orElse(null);
+        if(cart == null){
+            var errorMessage = Map.of("error","Invalid cart provided");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        cart.removeProduct(productId);
+        cartRepository.save(cart);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
     }
 }

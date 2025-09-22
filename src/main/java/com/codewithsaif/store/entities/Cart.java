@@ -28,12 +28,26 @@ public class Cart {
     @Column(name = "date_created", insertable = false,updatable = false)
     private LocalDate dateCreated;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.MERGE,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "cart",cascade = CascadeType.MERGE, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<CartItem> cartItems = new LinkedHashSet<>();
 
     public BigDecimal getTotalPrice() {
         return cartItems.stream()
                 .map(CartItem::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public CartItem getItem(Long productId){
+       return getCartItems().stream()
+                .filter(item -> item.getProduct().getId().equals(productId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void removeProduct(Long productId){
+        var cartItem = getItem(productId);
+        if(cartItem != null){
+            getCartItems().remove(cartItem);
+        }
     }
 }
