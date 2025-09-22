@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -81,7 +82,7 @@ public class CartController {
     }
 
     @PutMapping("/{cartId}/items/{productId}")
-    public ResponseEntity<CartDto> updateCart(
+    public ResponseEntity<?> updateCart(
             @PathVariable UUID cartId ,
             @PathVariable Long productId,
             @Valid @RequestBody UpdateCartRequest request
@@ -93,7 +94,9 @@ public class CartController {
 
         var product = productRepository.findById(productId).orElse(null);
         if(product == null){
-            return  ResponseEntity.badRequest().build();
+            var errorMessage = Map.of("error","Product not present in the system");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+//            return  ResponseEntity.badRequest().build();
         }
 
         var cartItem = cart.getCartItems().stream()
@@ -101,14 +104,11 @@ public class CartController {
                 .findFirst()
                 .orElse(null);
 
-        if(cartItem != null){
-            cartItem.setQuantity(request.getQuantity());
+        if(cartItem == null){
+            var errorMessage = Map.of("error","Product not present in the cart");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
         } else {
-            cartItem = new CartItem();
-            cartItem.setProduct(product);
-            cartItem.setCart(cart);
             cartItem.setQuantity(request.getQuantity());
-            cart.getCartItems().add(cartItem);
         }
         cartRepository.save(cart);
         var cartDto = cartMapper.toDto(cart);
