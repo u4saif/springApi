@@ -3,11 +3,13 @@ package com.codewithsaif.store.controllers;
 import com.codewithsaif.store.dtos.AddItemToCartRequest;
 import com.codewithsaif.store.dtos.CartDto;
 import com.codewithsaif.store.dtos.CartItemDto;
+import com.codewithsaif.store.dtos.UpdateCartRequest;
 import com.codewithsaif.store.entities.Cart;
 import com.codewithsaif.store.entities.CartItem;
 import com.codewithsaif.store.mappers.CartMapper;
 import com.codewithsaif.store.repositories.CartRepository;
 import com.codewithsaif.store.repositories.ProductRepository;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -78,4 +80,38 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.CREATED).body(carItemDto);
     }
 
+    @PutMapping("/{cartId}/items/{productId}")
+    public ResponseEntity<CartDto> updateCart(
+            @PathVariable UUID cartId ,
+            @PathVariable Long productId,
+            @Valid @RequestBody UpdateCartRequest request
+    ){
+        var cart = cartRepository.findById(cartId).orElse(null);
+        if(cart == null){
+            return ResponseEntity.notFound().build();
+        }
+
+        var product = productRepository.findById(productId).orElse(null);
+        if(product == null){
+            return  ResponseEntity.badRequest().build();
+        }
+
+        var cartItem = cart.getCartItems().stream()
+                .filter(item -> item.getProduct().getId().equals(product.getId()))
+                .findFirst()
+                .orElse(null);
+
+        if(cartItem != null){
+            cartItem.setQuantity(request.getQuantity());
+        } else {
+            cartItem = new CartItem();
+            cartItem.setProduct(product);
+            cartItem.setCart(cart);
+            cartItem.setQuantity(request.getQuantity());
+            cart.getCartItems().add(cartItem);
+        }
+        cartRepository.save(cart);
+        var cartDto = cartMapper.toDto(cart);
+        return ResponseEntity.ok(cartDto);
+    }
 }
