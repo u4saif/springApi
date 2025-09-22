@@ -50,4 +50,8 @@ public class Cart {
             getCartItems().remove(cartItem);
         }
     }
+
+    public void clearCart(){
+        cartItems.clear();
+    }
 }

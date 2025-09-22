@@ -111,6 +111,21 @@ public class CartController {
         return ResponseEntity.ok(cartDto);
     }
 
+    @DeleteMapping("/{cartId}/items")
+    public ResponseEntity<?> clearCart(
+            @PathVariable("cartId") UUID cartId
+    ){
+        var cart = cartRepository.findById(cartId).orElse(null);
+        if(cart == null){
+            var errorMessage = Map.of("error","Invalid cart provided");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+        cart.clearCart();
+        cartRepository.save(cart);
+        var cartDto = cartMapper.toDto(cart);
+        return  ResponseEntity.ok(cartDto);
+    }
+
     @DeleteMapping("/{cartId}/items/{productId}")
     public ResponseEntity<?> deleteProduct(
             @PathVariable("cartId") UUID cartId ,
