@@ -12,6 +12,9 @@ import com.codewithsaif.store.mappers.CartMapper;
 import com.codewithsaif.store.repositories.CartRepository;
 import com.codewithsaif.store.repositories.ProductRepository;
 import com.codewithsaif.store.services.CartService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,7 @@ import java.util.UUID;
 
 @AllArgsConstructor
 @RestController
+@Tag(name = "Cart")
 @RequestMapping("/carts")
 public class CartController {
 
@@ -44,7 +48,9 @@ public class CartController {
     }
 
     @PostMapping("/{cartId}/items")
+    @Operation(summary = "Adds item to cart.")
     public ResponseEntity<?> addToCart(
+            @Parameter( description = "The Id of cart")
             @PathVariable UUID cartId,
             @RequestBody AddItemToCartRequest request
     ){
