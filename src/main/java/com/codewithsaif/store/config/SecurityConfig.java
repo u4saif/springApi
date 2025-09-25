@@ -31,9 +31,9 @@ public class SecurityConfig {
                         c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(c-> c
-                        .requestMatchers("/carts/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/users").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/**").permitAll()
+//                        .requestMatchers(HttpMethod.POST,"/users").permitAll()
+//                        .anyRequest().authenticated()
                 );
         return http.build();
     }
