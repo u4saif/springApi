@@ -6,10 +6,11 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @AllArgsConstructor
 @RestController
@@ -18,19 +19,20 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private  final AuthenticationManager authenticationManager;
     @PostMapping("/login")
     public ResponseEntity<?> userLogin(@Valid  @RequestBody UserLoginRequest request) {
-
-        var user = userRepository.findByEmail(request.email).orElse(null);
-        if (user == null) {
-            var errorMessage = Map.of("error", "Invalid username / password");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
-        }
-        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        };
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                request.getEmail(),request.getPassword())
+        );
         return ResponseEntity.ok().build();
     }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Void> handleBadCredentialsException(){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
 }
 
