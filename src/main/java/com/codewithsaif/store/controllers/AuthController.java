@@ -30,6 +30,11 @@ public class AuthController {
         return ResponseEntity.ok(new JwtResponseDto(token));
     }
 
+    @PostMapping("/validate")
+    public ResponseEntity<?> validate(@RequestHeader("Authorization") String token){
+        return ResponseEntity.ok(jwtService.validateToken(token));
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Void> handleBadCredentialsException(){
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

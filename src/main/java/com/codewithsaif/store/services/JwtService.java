@@ -1,5 +1,6 @@
 package com.codewithsaif.store.services;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,12 +14,26 @@ public class JwtService {
     private String secret;
 
     public String generateToken(String email){
-        final long tokenExpiration = 86400;
+        final long tokenExpiration = 10;
        return  Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis()+1000*tokenExpiration))
                 .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
                 .compact();
+    }
+
+    public boolean validateToken(String token){
+        try{
+            var claims = Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(secret.getBytes())).build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.getExpiration().after(new Date());
+        }catch (JwtException jwtexp){
+            return false;
+        }
+
+
     }
 }
