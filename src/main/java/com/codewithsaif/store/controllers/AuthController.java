@@ -32,7 +32,8 @@ public class AuthController {
 
     @PostMapping("/validate")
     public ResponseEntity<?> validate(@RequestHeader("Authorization") String token){
-        return ResponseEntity.ok(jwtService.validateToken(token));
+        var OnlyToken = token.replace("Bearer ","");
+        return ResponseEntity.ok(jwtService.validateToken(OnlyToken));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
