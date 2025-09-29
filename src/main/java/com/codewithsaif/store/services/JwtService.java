@@ -14,7 +14,7 @@ public class JwtService {
     private String secret;
 
     public String generateToken(String email){
-        final long tokenExpiration = 10;
+        final long tokenExpiration = 60;
        return  Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
@@ -33,7 +33,13 @@ public class JwtService {
         }catch (JwtException jwtexp){
             return false;
         }
+    }
 
-
+    public String getEmailId(String token){
+        var claims = Jwts.parser()
+                .verifyWith(Keys.hmacShaKeyFor(secret.getBytes())).build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.getSubject();
     }
 }
