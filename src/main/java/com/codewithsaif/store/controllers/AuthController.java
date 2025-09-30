@@ -3,6 +3,8 @@ package com.codewithsaif.store.controllers;
 import com.codewithsaif.store.dtos.JwtResponseDto;
 import com.codewithsaif.store.dtos.UserLoginRequest;
 import com.codewithsaif.store.services.JwtService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,13 +22,22 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     @PostMapping("/login")
-    public ResponseEntity<JwtResponseDto> userLogin(@Valid  @RequestBody UserLoginRequest request) {
+    public ResponseEntity<JwtResponseDto> userLogin(@Valid  @RequestBody UserLoginRequest request,
+        HttpServletResponse response
+    ) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                 request.getEmail(),request.getPassword())
         );
 
-        var token = jwtService.generateToken(request.email);
+        var token = jwtService.generateToken(request.email,"access");
+        var refreshToken = jwtService.generateToken(request.email,"refresh");
+        var cookie = new Cookie("refreshToken",refreshToken);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/auth/refresh");
+        cookie.setMaxAge(604800);
+        cookie.setSecure(true);
+        response.addCookie(cookie);
         return ResponseEntity.ok(new JwtResponseDto(token));
     }
 
